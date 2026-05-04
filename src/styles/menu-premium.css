@@ -81,8 +81,32 @@
 #menu-search-input:focus { outline: none; border-color: var(--color-principal); box-shadow: 0 15px 40px rgba(193,18,31,0.15); }
 
 /* Mini menu cats dropdown */
-.mini-menu-cats { position: absolute; top: calc(100% + 15px); right: 0; background: rgba(255,255,255,0.98); backdrop-filter: blur(15px); width: 280px; border-radius: 24px; padding: 1.5rem; box-shadow: 0 25px 50px rgba(0,0,0,0.15); display: none !important; flex-direction: column; gap: 8px; opacity: 0; transform: translateY(-10px) scale(0.95); pointer-events: none; transition: all 0.3s cubic-bezier(0.165,0.84,0.44,1); z-index: 200; }
-.mini-menu-cats.visible { display: flex !important; opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+.mini-menu-cats { 
+    position: absolute; 
+    top: calc(100% + 15px); 
+    right: 0; 
+    background: rgba(255,255,255,0.98); 
+    backdrop-filter: blur(15px); 
+    width: 280px; 
+    border-radius: 24px; 
+    padding: 1.5rem; 
+    box-shadow: 0 25px 50px rgba(0,0,0,0.15); 
+    display: flex !important; 
+    visibility: hidden;
+    flex-direction: column; 
+    gap: 8px; 
+    opacity: 0; 
+    transform: translateY(-10px) scale(0.95); 
+    pointer-events: none; 
+    transition: all 0.3s cubic-bezier(0.165,0.84,0.44,1); 
+    z-index: 200; 
+}
+.mini-menu-cats.visible { 
+    visibility: visible !important; 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+    pointer-events: auto; 
+}
 .cat-icon { width: 45px !important; height: 45px !important; border-radius: 12px; overflow: hidden; flex-shrink: 0; }
 .cat-icon img { width: 100% !important; height: 100% !important; object-fit: cover !important; }
 .btn-mini-cat { padding: 1rem 1.4rem; border-radius: 16px; border: 1px solid rgba(0,0,0,0.05); background: white; text-align: left; font-weight: 700; font-size: 1rem; color: var(--color-secundario); font-family: var(--fuente-principal); cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 12px; }
@@ -103,6 +127,66 @@
     .search-box-wrapper { width: 100%; }
     .search-input-group { gap: 8px; }
     #menu-search-input { padding: 1rem 1rem 1rem 50px; font-size: 1rem; height: 50px; }
+
+    /* Estilos Bottom Sheet para Categorías */
+    .mini-menu-cats {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        top: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 32px 32px 0 0 !important;
+        transform: translateY(105%) !important;
+        opacity: 1 !important;
+        visibility: hidden !important;
+        transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s !important;
+        z-index: 5000 !important;
+        padding: 3rem 1.5rem 3.5rem 1.5rem !important;
+        box-shadow: 0 -15px 50px rgba(0,0,0,0.3) !important;
+        background: #fff !important;
+    }
+
+    .mini-menu-cats.visible {
+        transform: translateY(0) !important;
+        visibility: visible !important;
+    }
+
+    .bottom-sheet-handle {
+        display: block !important;
+        width: 50px;
+        height: 6px;
+        background: rgba(0,0,0,0.1);
+        border-radius: 10px;
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .bottom-sheet-header {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .bottom-sheet-header h3 {
+        font-family: var(--fuente-titulos);
+        font-size: 1.8rem;
+        color: var(--color-secundario);
+        margin-bottom: 0.5rem;
+    }
+
+    .bottom-sheet-header p {
+        color: var(--color-texto-claro);
+        font-size: 0.9rem;
+    }
+
+    .bottom-sheet-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
 }
 
 @media (max-width: 768px) {
@@ -153,6 +237,22 @@
     gap: 0.8rem !important;
 }
 
-.mod-item-row {
-    margin-bottom: 0.2rem !important;
+/* Overlay para el mini menú de categorías */
+.mini-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 4900;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s ease;
+}
+
+.mini-menu-overlay.visible {
+    opacity: 1;
+    visibility: visible;
 }

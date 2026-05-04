@@ -17,82 +17,109 @@ export default function ContactoPage() {
       const isMobile = window.innerWidth <= 1024;
 
       if (!isMobile) {
-        const tl = gsap.timeline();
-        tl.from('.animate-up', { 
-          y: 60, 
-          opacity: 0, 
-          duration: 1.2, 
-          stagger: 0.2, 
-          ease: 'power4.out',
-          force3D: true,
-          clearProps: 'opacity' 
-        });
-        tl.from('.animate-right', { 
-          x: 100, 
-          opacity: 0, 
-          duration: 1.4, 
-          ease: 'power4.out',
-          force3D: true,
-          clearProps: 'opacity' 
-        }, '-=0.9');
+        const tl = gsap.timeline({ delay: 1.2 });
+        tl.fromTo('.animate-up', 
+          { y: 60, opacity: 0, visibility: 'hidden' },
+          { 
+            y: 0, 
+            opacity: 1, 
+            visibility: 'visible',
+            duration: 1.2, 
+            stagger: 0.2, 
+            ease: 'power4.out',
+            force3D: true
+          }
+        );
+        tl.fromTo('.animate-right', 
+          { x: 100, opacity: 0, visibility: 'hidden' },
+          { 
+            x: 0, 
+            opacity: 1, 
+            visibility: 'visible',
+            duration: 1.4, 
+            ease: 'power4.out',
+            force3D: true
+          }, 
+          '-=0.9'
+        );
       } else {
-        gsap.from('.premium-heading', { 
-          y: 40, 
-          opacity: 0, 
-          duration: 0.9, 
-          delay: 0.2, 
-          ease: 'power3.out',
-          force3D: true,
-          clearProps: 'all' 
-        });
-        gsap.from('.premium-lead', { 
-          y: 40, 
-          opacity: 0, 
-          duration: 0.9, 
-          delay: 0.4, 
-          ease: 'power3.out',
-          force3D: true,
-          clearProps: 'all' 
-        });
-        gsap.from('.info-card', { 
-          scrollTrigger: { 
-            trigger: '.contact-info-grid', 
-            start: 'top 92%' 
-          }, 
-          y: 40, 
-          opacity: 0, 
-          duration: 0.8, 
-          stagger: 0.18, 
-          ease: 'power2.out', 
-          force3D: true,
-          clearProps: 'all' 
-        });
-        gsap.from('.glass-form-container', { 
-          scrollTrigger: { 
-            trigger: '.contact-form-side', 
-            start: 'top 88%' 
-          }, 
-          y: 40, 
-          opacity: 0, 
-          duration: 1.2, 
-          ease: 'power3.out', 
-          force3D: true,
-          clearProps: 'all' 
-        });
+        gsap.fromTo('.premium-heading', 
+          { y: 40, opacity: 0, visibility: 'hidden' },
+          { 
+            y: 0, 
+            opacity: 1, 
+            visibility: 'visible',
+            duration: 0.9, 
+            delay: 1.2, 
+            ease: 'power3.out',
+            force3D: true
+          }
+        );
+        gsap.fromTo('.premium-lead', 
+          { y: 40, opacity: 0, visibility: 'hidden' },
+          { 
+            y: 0, 
+            opacity: 1, 
+            visibility: 'visible',
+            duration: 0.9, 
+            delay: 1.4, 
+            ease: 'power3.out',
+            force3D: true
+          }
+        );
+        gsap.fromTo('.info-card', 
+          { y: 40, opacity: 0, visibility: 'hidden' },
+          { 
+            scrollTrigger: { 
+              trigger: '.contact-info-grid', 
+              start: 'top 92%' 
+            }, 
+            y: 0, 
+            opacity: 1, 
+            visibility: 'visible',
+            duration: 0.8, 
+            stagger: 0.18, 
+            ease: 'power2.out', 
+            force3D: true
+          }
+        );
+        gsap.fromTo('.glass-form-container', 
+          { y: 40, opacity: 0, visibility: 'hidden' },
+          { 
+            scrollTrigger: { 
+              trigger: '.contact-form-side', 
+              start: 'top 88%' 
+            }, 
+            y: 0, 
+            opacity: 1, 
+            visibility: 'visible',
+            duration: 1.2, 
+            ease: 'power3.out', 
+            force3D: true
+          }
+        );
       }
 
-      gsap.from('.map-card', { 
-        scrollTrigger: { 
-          trigger: '.map-reveal-section', 
-          start: 'top 85%' 
-        }, 
-        y: isMobile ? 40 : 100, 
-        opacity: 0, 
-        duration: 1.5, 
-        ease: 'power4.out', 
-        force3D: true,
-        clearProps: 'all' 
-      });
+      gsap.fromTo('.map-card', 
+        { y: isMobile ? 40 : 100, opacity: 0, visibility: 'hidden' },
+        { 
+          scrollTrigger: { 
+            trigger: '.map-reveal-section', 
+            start: 'top 85%' 
+          }, 
+          y: 0, 
+          opacity: 1, 
+          visibility: 'visible',
+          duration: 1.5, 
+          ease: 'power4.out', 
+          force3D: true
+        }
+      );
+
+      // Force refresh for ScrollTrigger after a short delay
+      setTimeout(() => {
+        ScrollTrigger.refresh();
+      }, 200);
     };
     loadGSAP();
   }, []);
@@ -103,7 +130,11 @@ export default function ContactoPage() {
     const mensaje = document.getElementById('conMensaje').value;
     const email = document.getElementById('conEmail').value;
     let texto = `Hola La Nonna! 👋 Vengo desde su página web de Contacto:\n\n*Nombre:* ${nombre}\n`;
-    if (email) texto += `*Email:* ${email}\n`;
+    if (!email) {
+      document.getElementById('conEmail').focus();
+      return;
+    }
+    texto += `*Email:* ${email}\n`;
     texto += `*Mensaje:* ${mensaje}\n\n_Enviado desde el portal premium._`;
     const num = (window.RESTAURANT_CONFIG?.telefonoWP) ?? '573112518913';
     window.open(`https://api.whatsapp.com/send?phone=${num}&text=${encodeURIComponent(texto)}`, '_blank');
@@ -161,8 +192,8 @@ export default function ContactoPage() {
                   <input type="text" id="conNombre" placeholder="Ej. Juan Pérez" required />
                 </div>
                 <div className="input-group">
-                  <label htmlFor="conEmail">Correo Electrónico (Opcional)</label>
-                  <input type="email" id="conEmail" placeholder="juan@ejemplo.com" />
+                  <label htmlFor="conEmail">Correo Electrónico</label>
+                  <input type="email" id="conEmail" placeholder="juan@ejemplo.com" required />
                 </div>
                 <div className="input-group">
                   <label htmlFor="conMensaje">Tu Mensaje</label>

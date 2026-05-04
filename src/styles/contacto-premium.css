@@ -14,9 +14,10 @@
     overflow-x: hidden;
 }
 
-/* Visibility by default for safety, GSAP will animate */
-.animate-up, .animate-right, .info-card {
-    opacity: 1;
+/* Initial state for animations to avoid flash of unstyled content */
+.animate-up, .animate-right, .info-card, .glass-form-container, .map-card {
+    opacity: 0;
+    visibility: hidden;
 }
 
 .ambient-glow {

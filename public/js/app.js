@@ -60,6 +60,8 @@ function renderizarMiniMenuCats() {
         document.addEventListener("click", (e) => {
             if (!contenedor.contains(e.target) && !e.target.closest('#cat-filter-btn')) {
                 contenedor.classList.remove("visible");
+                const overlay = document.getElementById("mini-menu-categorias-overlay");
+                if (overlay) overlay.classList.remove("visible");
             }
         });
     }, 100);
@@ -186,8 +188,18 @@ function inicializarObserverLiquid() {
 function toggleMiniMenuCategorias(event) {
     if (event) event.stopPropagation();
     const menu = document.getElementById("mini-menu-categorias");
+    const overlay = document.getElementById("mini-menu-categorias-overlay");
     if (!menu) return;
-    menu.classList.toggle("visible");
+    
+    const isVisible = menu.classList.contains("visible");
+    
+    if (isVisible) {
+        menu.classList.remove("visible");
+        if (overlay) overlay.classList.remove("visible");
+    } else {
+        menu.classList.add("visible");
+        if (overlay) overlay.classList.add("visible");
+    }
 }
 
 
@@ -217,7 +229,11 @@ function seleccionarCategoriaMini(cat) {
 
     if (miniMenu) {
         // Pequeño delay para que el usuario vea la selección antes de cerrar
-        setTimeout(() => miniMenu.classList.remove("visible"), 200);
+        setTimeout(() => {
+            miniMenu.classList.remove("visible");
+            const overlay = document.getElementById("mini-menu-categorias-overlay");
+            if (overlay) overlay.classList.remove("visible");
+        }, 200);
     }
 
     if (contenedor && window.gsap) {
@@ -659,9 +675,8 @@ function actualizarUiCarrito() {
     let cantidadTotal = 0;
     let precioTotal = 0;
     
-    // --- LÓGICA DE PRECIO Y DESCUENTOS (2x1) ---
-    let itemsPara2x1 = [];
-    let otrosPrecios = 0;
+    // --- LÓGICA DE PRECIO Y DESCUENTOS (DESACTIVADO) ---
+    let ahorro2x1 = 0; 
 
     for (const hash in carrito) {
         const item = carrito[hash];
@@ -669,31 +684,8 @@ function actualizarUiCarrito() {
         cantidadTotal += item.cantidad;
         
         const precioUnitario = calcularPrecioItem(item);
-
-        // Si es Pizza Clásica, entra en la bolsa del 2x1
-        if (prod.categoria && prod.categoria.includes("Pizzas Clásicas")) {
-            for (let i = 0; i < item.cantidad; i++) {
-                itemsPara2x1.push(precioUnitario);
-            }
-        } else {
-            otrosPrecios += (precioUnitario * item.cantidad);
-        }
+        precioTotal += (precioUnitario * item.cantidad);
     }
-
-    // Calcular Subtotal con 2x1
-    itemsPara2x1.sort((a, b) => b - a);
-    let subtotal2x1 = 0;
-    let ahorro2x1 = 0;
-
-    for (let i = 0; i < itemsPara2x1.length; i++) {
-        if (i % 2 === 0) {
-            subtotal2x1 += itemsPara2x1[i];
-        } else {
-            ahorro2x1 += itemsPara2x1[i];
-        }
-    }
-
-    precioTotal = otrosPrecios + subtotal2x1;
 
 
     // const flotante = document.getElementById("btn-flotante-carrito");
@@ -844,37 +836,62 @@ function renderizarSugerenciasCarrito() {
         if (!prod) continue;
         const cat = prod.categoria;
         if (cat === "Bebidas") tieneBebida = true;
-        else if (cat === "Para Compartir") tieneCompartir = true;
+        else if (cat === "Entradas") tieneCompartir = true;
         else tieneComida = true;
     }
 
-    let catSugerida = "", tituloMsg = "";
-
+    // 1. Definir prioridades de sugerencia según el estado del carrito
+    const prioridades = [];
     if (tieneComida && !tieneBebida) {
-        catSugerida = "Bebidas";
-        tituloMsg = "🥤 ¿Acompañamos con una bebida?";
-    } else if (tieneComida && !tieneCompartir) {
-        catSugerida = "Para Compartir";
-        tituloMsg = "🍟 ¿Algo para picar mientras tanto?";
-    } else if (tieneCompartir && !tieneComida) {
-        catSugerida = "Pizzas Especiales";
-        tituloMsg = "🍕 ¿Cuál será tu plato fuerte?";
-    } else if (tieneBebida && !tieneComida) {
-        catSugerida = "Pastas Frescas";
-        tituloMsg = "🍝 ¿Acompañamos con una pasta artesanal?";
-    } else {
-        if (!tieneBebida) {
-            catSugerida = "Bebidas";
-            tituloMsg = "🥤 ¡No olvides la hidratación!";
+        prioridades.push({ cat: "Bebidas", msg: "🥤 ¿Acompa\u00f1amos con una bebida?" });
+    }
+    if (tieneComida && !tieneCompartir) {
+        prioridades.push({ cat: "Entradas", msg: "🍟 ¿Algo para picar mientras tanto?" });
+    }
+    if (tieneCompartir && !tieneComida) {
+        prioridades.push({ cat: "Pizzas Especiales", msg: "🍕 ¿Cuál será tu plato fuerte?" });
+    }
+    if (tieneBebida && !tieneComida) {
+        prioridades.push({ cat: "Pastas Frescas", msg: "🍝 ¿Acompa\u00f1amos con una pasta artesanal?" });
+    }
+    // El postre siempre es una buena prioridad final
+    prioridades.push({ cat: "Postres", msg: "🍰 ¿Cerramos con algo dulce?" });
+
+    // Obtener IDs de productos ya en el carrito para no sugerir duplicados
+    const idsEnCarrito = Object.values(carrito).map(item => item.id.toString());
+
+    let catSugerida = "", tituloMsg = "", productosSugeribles = [];
+
+    // 2. Buscar la primera categoría de la lista de prioridades que tenga productos disponibles NO repetidos
+    for (const p of prioridades) {
+        const disponibles = RESTAURANT_CONFIG.productos.filter(prod => 
+            prod.categoria === p.cat && 
+            prod.disponible && 
+            !idsEnCarrito.includes(prod.id.toString())
+        );
+
+        if (disponibles.length > 0) {
+            catSugerida = p.cat;
+            tituloMsg = p.msg;
+            productosSugeribles = disponibles;
+            break; // Encontramos la mejor sugerencia lógica disponible
         }
     }
 
-    if (!catSugerida) {
-        contenedor.style.display = "none";
-        return;
+    // 3. Fallback final: Si ya pidió de todas las categorías lógicas, sugerir CUALQUIER cosa que falte
+    if (productosSugeribles.length === 0) {
+        productosSugeribles = RESTAURANT_CONFIG.productos.filter(p => 
+            p.disponible && 
+            !idsEnCarrito.includes(p.id.toString())
+        );
+        tituloMsg = "✨ ¿Algo más para tu banquete?";
     }
 
-    const productosSugeribles = RESTAURANT_CONFIG.productos.filter(p => p.categoria === catSugerida && p.disponible);
+    // Si de plano ya pidió TODO el menú (poco probable), mostrar un producto aleatorio aunque esté repetido
+    if (productosSugeribles.length === 0) {
+        productosSugeribles = RESTAURANT_CONFIG.productos.filter(p => p.disponible);
+    }
+
     if (productosSugeribles.length === 0) {
         contenedor.style.display = "none";
         return;
@@ -889,7 +906,7 @@ function renderizarSugerenciasCarrito() {
 
     contenedor.innerHTML = `
         <div class="cs-header">
-            <i class="fas fa-magic"></i> <span>${tituloMsg.replace(/[^\w\s¿?]/g, '').trim().toUpperCase()}</span>
+            <i class="fas fa-magic"></i> <span>${tituloMsg.replace(/[^\w\s¿?áéíóúÁÉÍÓÚñÑ]/g, '').trim().toUpperCase()}</span>
         </div>
         <div class="cross-sell-item" onclick="ejecutarSugerencia('${sugerencia.id}', this)">
             <img src="${transformarLinkImagen(sugerencia.imagen)}" class="cs-img" alt="${sugerencia.nombre}">
@@ -1092,6 +1109,16 @@ async function enviarPedidoWP(event) {
     const nombre = document.getElementById("nombre-cliente")?.value.trim() || "";
     const direccion = document.getElementById("direccion-cliente")?.value.trim() || "";
     const nota = (document.getElementById("notas-pedido") || document.getElementById("ui-nota-pedido"))?.value.trim() || "";
+
+    if (!direccion) {
+        alert("⚠️ Por favor ingresa la dirección de entrega o el número de mesa para continuar.");
+        const inputDir = document.getElementById("direccion-cliente");
+        if (inputDir) {
+            inputDir.focus();
+            inputDir.style.borderColor = "var(--color-principal)";
+        }
+        return;
+    }
 
     let textoPedido = RESTAURANT_CONFIG.mensajeWP || "¡Hola La Nonna! Quiero hacer el siguiente pedido:\n";
     

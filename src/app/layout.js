@@ -26,6 +26,7 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;800&family=Outfit:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+        <Script src="/data/menu.js?v=2.1" strategy="beforeInteractive" />
       </head>
       <body suppressHydrationWarning>
         {children}
@@ -67,7 +68,7 @@ export default function RootLayout({ children }) {
             <h2>Completa tu Pedido</h2>
             <form id="form-pedido">
               <input type="text" id="nombre-cliente" placeholder="Tu Nombre Completo" required />
-              <input type="text" id="direccion-cliente" placeholder="Dirección de Entrega o 'Mesa #'" />
+              <input type="text" id="direccion-cliente" placeholder="Dirección de Entrega o 'Mesa #'" required />
               <textarea id="notas-pedido" placeholder="Instrucciones especiales para el chef..."></textarea>
               <button type="submit" className="btn-block">Enviar a Cocina vía WhatsApp</button>
             </form>
@@ -75,10 +76,10 @@ export default function RootLayout({ children }) {
         </div>
         
         {/* Mobile Categories Bottom Sheet */}
+        <div id="mini-menu-categorias-overlay" className="mini-menu-overlay"></div>
         <div id="mini-menu-categorias" className="mini-menu-cats"></div>
 
-        {/* Core Scripts */}
-        <Script src="/data/menu.js?v=2.1" strategy="beforeInteractive" />
+        {/* Core Scripts loaded in head */}
         
         {/* FX System */}
         <Script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" strategy="afterInteractive" />

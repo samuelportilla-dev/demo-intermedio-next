@@ -3,12 +3,77 @@
    ========================================================= */
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import GlobalNav from '@/components/GlobalNav';
 import Preloader from '@/components/Preloader';
 import '../../styles/reservas-premium.css';
 
 export default function ReservasPage() {
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedTime, setSelectedTime] = useState('');
+
+  const hourRef = useRef(null);
+  const minuteRef = useRef(null);
+  const ampmRef = useRef(null);
+  
+  // Calendar State
+  const [viewDate, setViewDate] = useState(new Date());
+  
+  const months = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+  
+  const generateCalendarDays = () => {
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    const days = [];
+    for (let i = 0; i < firstDay; i++) {
+      days.push({ day: null, empty: true });
+    }
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push({ day: i, empty: false });
+    }
+    return days;
+  };
+
+  const changeMonth = (delta) => {
+    const newDate = new Date(viewDate);
+    newDate.setMonth(newDate.getMonth() + delta);
+    setViewDate(newDate);
+  };
+
+  const handleDateSelect = (day) => {
+    const dateStr = `${viewDate.getFullYear()}-${(viewDate.getMonth() + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+    setSelectedDate(dateStr);
+    setShowDatePicker(false);
+  };
+
+  const [tempHour, setTempHour] = useState('01');
+  const [tempMinute, setTempMinute] = useState('00');
+  const [tempAmpm, setTempAmpm] = useState('AM');
+
+  const hoursList = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'));
+  const minutesList = ['00', '15', '30', '45'];
+  const ampmList = ['AM', 'PM'];
+
+  const confirmTime = () => {
+    setSelectedTime(`${tempHour}:${tempMinute} ${tempAmpm}`);
+    setShowTimePicker(false);
+  };
+
+  useEffect(() => {
+    if (showTimePicker) {
+      // Sync scroll positions when modal opens
+      setTimeout(() => {
+        if (hourRef.current) hourRef.current.scrollTo({ top: hoursList.indexOf(tempHour) * 60, behavior: 'auto' });
+        if (minuteRef.current) minuteRef.current.scrollTo({ top: minutesList.indexOf(tempMinute) * 60, behavior: 'auto' });
+        if (ampmRef.current) ampmRef.current.scrollTo({ top: ampmList.indexOf(tempAmpm) * 60, behavior: 'auto' });
+      }, 50);
+    }
+  }, [showTimePicker]);
   useEffect(() => {
     // Load GSAP dynamically to ensure compatibility with Next.js SSR
     const initAnimations = async () => {
@@ -94,13 +159,22 @@ export default function ReservasPage() {
         const personas = document.getElementById("resPersonas").value;
         const ocasion = document.getElementById("resOcasion").value;
 
-        let textoWP = `SOLICITUD DE RESERVA - LA NONNA RÚSTICA\n\n`;
-        textoWP += `Anfitrión: ${nombre}\n`;
-        textoWP += `Fecha: ${fecha}\n`;
-        textoWP += `Hora: ${hora}\n`;
-        textoWP += `Comensales: ${personas}\n`;
-        textoWP += `Ocasión: ${ocasion}\n\n`;
-        textoWP += `Cordialmente solicitado para confirmación de disponibilidad.`;
+        if (!fecha || !hora) {
+          if (!fecha) setShowDatePicker(true);
+          else if (!hora) setShowTimePicker(true);
+          return;
+        }
+
+        let textoWP = `🌟 *NUEVA SOLICITUD DE RESERVA* 🌟\n`;
+        textoWP += `------------------------------------------\n`;
+        textoWP += `🏛️ *Restaurante:* La Nonna Rústica\n\n`;
+        textoWP += `👤 *Anfitrión:* ${nombre}\n`;
+        textoWP += `📅 *Fecha:* ${fecha}\n`;
+        textoWP += `⏰ *Hora:* ${hora}\n`;
+        textoWP += `👥 *Comensales:* ${personas}\n`;
+        textoWP += `🥂 *Ocasión:* ${ocasion}\n`;
+        textoWP += `------------------------------------------\n`;
+        textoWP += `✨ _Solicito amablemente confirmar disponibilidad para esta velada. Quedo atento a su respuesta._`;
 
         const num = (window.RESTAURANT_CONFIG?.telefonoWP) ? window.RESTAURANT_CONFIG.telefonoWP : "573112518913";
         const link = `https://api.whatsapp.com/send?phone=${num}&text=${encodeURIComponent(textoWP)}`;
@@ -159,11 +233,29 @@ export default function ReservasPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div className="form-group">
                     <label className="input-label">Fecha</label>
-                    <input type="date" id="resFecha" className="input-reserva" required />
+                    <input 
+                      type="text" 
+                      id="resFecha" 
+                      className="input-reserva" 
+                      value={selectedDate} 
+                      placeholder="Seleccionar Fecha"
+                      onClick={() => setShowDatePicker(true)}
+                      readOnly 
+                      required 
+                    />
                   </div>
                   <div className="form-group">
                     <label className="input-label">Hora</label>
-                    <input type="time" id="resHora" className="input-reserva" required />
+                    <input 
+                      type="text" 
+                      id="resHora" 
+                      className="input-reserva" 
+                      value={selectedTime} 
+                      placeholder="Seleccionar Hora"
+                      onClick={() => setShowTimePicker(true)}
+                      readOnly 
+                      required 
+                    />
                   </div>
                 </div>
 
@@ -199,7 +291,7 @@ export default function ReservasPage() {
                       <div className="oc-overlay"><span>Negocios</span></div>
                     </div>
                     <div className="occasion-card" data-value="Otra">
-                      <img src="https://images.unsplash.com/photo-1528605248644-14dd04cbda1d?q=80&w=400&auto=format&fit=crop" alt="Otra" />
+                      <img src="/img/ocasion_otra.png" alt="Otra" />
                       <div className="oc-overlay"><span>Otra</span></div>
                     </div>
                   </div>
@@ -232,6 +324,92 @@ export default function ReservasPage() {
           </div>
         </div>
       </footer>
+      {/* Custom Date Picker Modal */}
+      <div className={`res-modal-overlay ${showDatePicker ? 'active' : ''}`} onClick={() => setShowDatePicker(false)}>
+        <div className="res-modal-window" onClick={e => e.stopPropagation()}>
+          <div className="res-modal-header">
+            <h3>Seleccionar Fecha</h3>
+            <button className="close-res-modal" onClick={() => setShowDatePicker(false)}>&times;</button>
+          </div>
+          
+          <div className="calendar-controls">
+            <button className="btn-cal" onClick={() => changeMonth(-1)}><i className="fas fa-chevron-left"></i></button>
+            <span className="calendar-month-year">{months[viewDate.getMonth()]} {viewDate.getFullYear()}</span>
+            <button className="btn-cal" onClick={() => changeMonth(1)}><i className="fas fa-chevron-right"></i></button>
+          </div>
+          
+          <div className="calendar-grid">
+            {['DO', 'LU', 'MA', 'MI', 'JU', 'VI', 'SA'].map(d => (
+              <div key={d} className="cal-day-name">{d}</div>
+            ))}
+            {generateCalendarDays().map((d, i) => (
+              <div 
+                key={i} 
+                className={`cal-day ${d.empty ? 'empty' : ''} ${!d.empty && selectedDate === `${viewDate.getFullYear()}-${(viewDate.getMonth() + 1).toString().padStart(2, '0')}-${d.day.toString().padStart(2, '0')}` ? 'active' : ''}`}
+                onClick={() => !d.empty && handleDateSelect(d.day)}
+              >
+                {d.day}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Custom Professional Time Picker Modal */}
+      <div className={`res-modal-overlay ${showTimePicker ? 'active' : ''}`} onClick={() => setShowTimePicker(false)}>
+        <div className="res-modal-window" onClick={e => e.stopPropagation()}>
+          <div className="res-modal-header">
+            <h3>Seleccionar Hora</h3>
+            <button className="close-res-modal" onClick={() => setShowTimePicker(false)}>&times;</button>
+          </div>
+          
+          <div className="time-picker-ui">
+            <div className="time-picker-selection-lens"></div>
+            
+            {/* Hours Scroller */}
+            <div className="time-scroller-col" ref={hourRef} onScroll={(e) => {
+              const idx = Math.round(e.target.scrollTop / 60);
+              if (hoursList[idx]) setTempHour(hoursList[idx]);
+            }}>
+              {hoursList.map(h => (
+                <div key={h} className={`time-unit-item ${tempHour === h ? 'active' : ''}`} onClick={(e) => e.target.parentElement.scrollTo({top: hoursList.indexOf(h) * 60, behavior: 'smooth'})}>
+                  {h}
+                </div>
+              ))}
+            </div>
+
+            <div style={{fontSize: '2rem', fontWeight: 800, color: 'var(--res-gold)', opacity: 0.5}}>:</div>
+
+            {/* Minutes Scroller */}
+            <div className="time-scroller-col" ref={minuteRef} onScroll={(e) => {
+              const idx = Math.round(e.target.scrollTop / 60);
+              if (minutesList[idx]) setTempMinute(minutesList[idx]);
+            }}>
+              {minutesList.map(m => (
+                <div key={m} className={`time-unit-item ${tempMinute === m ? 'active' : ''}`} onClick={(e) => e.target.parentElement.scrollTo({top: minutesList.indexOf(m) * 60, behavior: 'smooth'})}>
+                  {m}
+                </div>
+              ))}
+            </div>
+
+            {/* AM/PM Scroller */}
+            <div className="time-scroller-col" ref={ampmRef} onScroll={(e) => {
+              const idx = Math.round(e.target.scrollTop / 60);
+              if (ampmList[idx]) setTempAmpm(ampmList[idx]);
+            }}>
+              {ampmList.map(ap => (
+                <div key={ap} className={`time-unit-item ${tempAmpm === ap ? 'active' : ''}`} onClick={(e) => e.target.parentElement.scrollTo({top: ampmList.indexOf(ap) * 60, behavior: 'smooth'})}>
+                  {ap}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button className="time-picker-confirm-btn" onClick={confirmTime}>
+            Confirmar Hora
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

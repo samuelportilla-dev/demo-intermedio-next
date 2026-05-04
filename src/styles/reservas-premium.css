@@ -437,3 +437,242 @@
         overflow: hidden !important;
     }
 }
+
+/* =========================================================
+   CUSTOM PREMIUM PICKERS (DATE & TIME)
+   ========================================================= */
+.res-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 48, 73, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.res-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.res-modal-window {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 30px;
+    width: 90%;
+    max-width: 450px;
+    padding: 2.5rem;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+    transform: translateY(50px) scale(0.9);
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.res-modal-overlay.active .res-modal-window {
+    transform: translateY(0) scale(1);
+}
+
+.res-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.res-modal-header h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.5rem;
+    color: var(--res-gold);
+    margin: 0;
+}
+
+.close-res-modal {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    font-size: 1.2rem;
+}
+
+.close-res-modal:hover {
+    background: var(--res-red);
+    border-color: var(--res-red);
+    transform: rotate(90deg);
+    box-shadow: 0 0 20px rgba(193, 18, 31, 0.4);
+}
+
+/* Custom Calendar Styles */
+.calendar-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.calendar-month-year {
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-transform: capitalize;
+}
+
+.btn-cal {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+    padding: 0.5rem 0.8rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-cal:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    text-align: center;
+}
+
+.cal-day-name {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--res-gold);
+    margin-bottom: 10px;
+}
+
+.cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: 0.3s;
+    border: 1px solid transparent;
+}
+
+.cal-day:hover:not(.empty) {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.2);
+}
+
+.cal-day.active {
+    background: var(--res-red);
+    color: white;
+    font-weight: 800;
+    box-shadow: 0 5px 15px rgba(193, 18, 31, 0.4);
+}
+
+.cal-day.today {
+    border-color: var(--res-gold);
+    color: var(--res-gold);
+}
+
+.cal-day.empty {
+    cursor: default;
+}
+
+/* Custom Professional Time Picker Scroller */
+.time-picker-ui {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    height: 250px;
+    margin: 1rem 0;
+}
+
+.time-scroller-col {
+    flex: 1;
+    height: 100%;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scrollbar-width: none; /* Firefox */
+    padding: 90px 0; /* Centering space */
+}
+
+.time-scroller-col::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+}
+
+.time-unit-item {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.2);
+    scroll-snap-align: center;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+}
+
+.time-unit-item.active {
+    color: var(--res-gold);
+    font-size: 2.8rem;
+    transform: scale(1.1);
+}
+
+.time-picker-selection-lens {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.03);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.time-picker-confirm-btn {
+    width: 100%;
+    margin-top: 2rem;
+    background: var(--res-red);
+    color: white;
+    border: none;
+    padding: 1.2rem;
+    border-radius: 15px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.time-picker-confirm-btn:hover {
+    background: #a31018;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 480px) {
+    .time-slots-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .res-modal-window {
+        padding: 1.5rem;
+    }
+}
